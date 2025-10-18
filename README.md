@@ -124,6 +124,6 @@ If you plan to extend or modify the shell, look at these hotspots first:
 - `execution/` - add support for more complex redirections, background jobs, or better error handling.
 
 
-## Authors
-
-This project was done with qais hatahet.
+### Contributors
+- [@Oalananz](https://github.com/Oalananz)
+- [@Qhatahet](https://github.com/Qhatahet)
