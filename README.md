@@ -123,6 +123,26 @@ If you plan to extend or modify the shell, look at these hotspots first:
 - `expander/` - adjust variable expansion rules.
 - `execution/` - add support for more complex redirections, background jobs, or better error handling.
 
+  sequenceDiagram
+    participant User
+    participant Minishell
+    participant Tokenizer
+    participant Parser
+    participant Expander
+    participant Executor
+    participant Builtin/External
+
+    User->>Minishell: Type command
+    Minishell->>Tokenizer: Tokenize input
+    Tokenizer->>Parser: Send tokens
+    Parser->>Expander: Expand variables
+    Expander->>Executor: Prepare commands and arguments
+    Executor->>Builtin/External: Execute command
+    Builtin/External-->>Executor: Return status/output
+    Executor-->>Minishell: Return status/output
+    Minishell-->>User: Display output
+
+
 
 ### Contributors
 - [@Oalananz](https://github.com/Oalananz)
