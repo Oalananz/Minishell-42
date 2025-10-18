@@ -123,7 +123,12 @@ If you plan to extend or modify the shell, look at these hotspots first:
 - `expander/` - adjust variable expansion rules.
 - `execution/` - add support for more complex redirections, background jobs, or better error handling.
 
-  sequenceDiagram
+## Sequence Diagram
+
+The following Mermaid diagram shows **how minishell processes a command**:
+
+```mermaid
+sequenceDiagram
     participant User
     participant Minishell
     participant Tokenizer
@@ -141,7 +146,49 @@ If you plan to extend or modify the shell, look at these hotspots first:
     Builtin/External-->>Executor: Return status/output
     Executor-->>Minishell: Return status/output
     Minishell-->>User: Display output
+```
 
+### ASCII Version (GitHub-friendly)
+
+```
+User
+ │
+ │  Type command
+ ▼
+Minishell
+ │
+ │  Tokenize input
+ ▼
+Tokenizer
+ │
+ │  Send tokens
+ ▼
+Parser
+ │
+ │  Expand variables
+ ▼
+Expander
+ │
+ │  Prepare commands & args
+ ▼
+Executor
+ │
+ │  Execute built-in / external
+ ▼
+Builtin / External
+ │
+ │  Return status/output
+ ▲
+Executor
+ │
+ │  Return status/output
+ ▲
+Minishell
+ │
+ │  Display output
+ ▲
+User
+```
 
 
 ### Contributors
