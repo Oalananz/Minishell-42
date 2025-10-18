@@ -126,6 +126,7 @@ If you plan to extend or modify the shell, look at these hotspots first:
 ## Sequence Diagram
 
 The following Mermaid diagram shows **how minishell processes a command**:
+
 ```mermaid
 sequenceDiagram
     participant User
@@ -133,42 +134,18 @@ sequenceDiagram
     participant Tokenizer
     participant Parser
     participant Expander
-    participant RedirectionHandler
-    participant PipeHandler
     participant Executor
     participant Builtin/External
 
-    User->>Minishell: Type command (e.g., `cmd1 arg1 | cmd2 > file`)
-    Minishell->>Tokenizer: Tokenize input (into words, operators)
-    Tokenizer-->>Minishell: Tokens
-    Minishell->>Parser: Parse tokens (build Abstract Syntax Tree - AST)
-    Parser->>Expander: Request variable expansion
-    Expander-->>Parser: Expanded AST
-    Parser->>RedirectionHandler: Process redirections ('>', '<', '>>', '<<')
-    RedirectionHandler-->>Parser: Updated AST with file descriptors
-    Parser->>PipeHandler: Identify pipelines ('|')
-    PipeHandler-->>Parser: Commands grouped for pipes
-    Parser-->>Minishell: Structured command(s) ready for execution
-    Minishell->>Executor: Execute command(s)
-    
-    alt If command involves pipes
-        loop For each command in pipeline
-            Executor->>RedirectionHandler: Set up child process I/O (stdin/stdout for pipes)
-            RedirectionHandler-->>Executor: Child process I/O set
-            Executor->>Builtin/External: Fork & exec command
-            Builtin/External-->>Executor: Child process exit status
-            Executor-->>Minishell: Collect statuses
-        end
-    else If single command
-        Executor->>RedirectionHandler: Set up I/O
-        RedirectionHandler-->>Executor: I/O ready
-        Executor->>Builtin/External: Fork & exec command (or run builtin directly)
-        Builtin/External-->>Executor: Exit status/output
-        Executor-->>Minishell: Return status/output
-    end
-    
-    Minishell-->>User: Display final output and prompt
-    Minishell->>User: Handle errors (e.g., command not found)
+    User->>Minishell: Type command
+    Minishell->>Tokenizer: Tokenize input
+    Tokenizer->>Parser: Send tokens
+    Parser->>Expander: Expand variables
+    Expander->>Executor: Prepare commands and arguments
+    Executor->>Builtin/External: Execute command
+    Builtin/External-->>Executor: Return status/output
+    Executor-->>Minishell: Return status/output
+    Minishell-->>User: Display output
 ```
 
 
