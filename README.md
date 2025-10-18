@@ -148,47 +148,6 @@ sequenceDiagram
     Minishell-->>User: Display output
 ```
 
-### ASCII Version (GitHub-friendly)
-
-```
-User
- │
- │  Type command
- ▼
-Minishell
- │
- │  Tokenize input
- ▼
-Tokenizer
- │
- │  Send tokens
- ▼
-Parser
- │
- │  Expand variables
- ▼
-Expander
- │
- │  Prepare commands & args
- ▼
-Executor
- │
- │  Execute built-in / external
- ▼
-Builtin / External
- │
- │  Return status/output
- ▲
-Executor
- │
- │  Return status/output
- ▲
-Minishell
- │
- │  Display output
- ▲
-User
-```
 
 
 ### Contributors
