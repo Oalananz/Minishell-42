@@ -1,4 +1,3 @@
-
 # minishell
 
 This is a small Unix shell implementation (a 42-school style "minishell"). It implements a subset of typical shell features: parsing and tokenizing input, environment management, built-in commands, basic redirections, here-documents, and simple pipeline execution.
@@ -16,14 +15,36 @@ This README documents the project structure, features, build and run instruction
 - Redirections: input (`<`), output (`>`), append (`>>`), and here-doc (`<<`).
 - Basic memory and resource cleanup between loop iterations.
 
-## Requirements
+## Architecture
+
+At a high level, the shell follows a classic pipeline:
+
+1. **Read input** (interactive loop using `readline`)
+2. **Tokenize** (split into tokens while respecting quotes/operators)
+3. **Parse** (turn tokens into command structures / AST-like representation)
+4. **Expand** (environment variables, quote-aware expansion, heredoc expansion rules)
+5. **Execute** (builtins in-process when applicable; otherwise fork/exec + pipes + redirections)
+6. **Cleanup** (free per-iteration resources, close FDs, unlink heredoc temp files)
+
+Main “modules” and responsibilities:
+
+- **Tokenizer (`tokenizer/`)**: Converts the raw line into tokens while handling quotes and special characters/operators.
+- **Parser (`parser/`)**: Classifies tokens and builds the command representation for execution (including pipeline segments).
+- **Expander (`expander/`)**: Applies `$VAR` expansion rules and quote-aware substitution.
+- **Execution (`execution/`)**: Sets up redirections and pipes, spawns processes, manages exit status, and handles here-documents.
+- **Builtins (`built-in/`)**: Implements internal commands executed without `execve` when possible.
+- **Signals (`signals.c`)**: Configures the interactive signal behavior to match typical shell UX.
+
+## How to run
+
+### Requirements
 
 - POSIX-like environment (Linux/macOS).
 - GCC or Clang for building C sources.
 - Make (uses the provided `Makefile`).
 - The code uses the readline library; ensure `readline` (development headers) are installed. On Debian/Ubuntu: `libreadline-dev`.
 
-## Build
+### Build
 
 From the project root run:
 
@@ -31,15 +52,13 @@ From the project root run:
 make
 ```
 
-This compiles the project and produces the `minishell` executable according to the `Makefile` rules.
-
 To clean build artifacts:
 
 ```sh
 make fclean
 ```
 
-## Run
+### Run
 
 Start the shell by running the produced binary from the repository root:
 
@@ -111,17 +130,14 @@ Edge cases to be mindful of (known complexity areas):
 - Some positional parameter and subshell features are out of scope.
 - Advanced job control (background `&`, fg/bg) and command substitution are not implemented (unless added elsewhere in the code).
 
-## Development notes
+## What I learned
 
-- Memory management: most subsystems free their allocated data between loop iterations (`main_utils.c::free_loop`).
-- Temporary files used for here-documents are unlinked via `unlink_files` after command execution.
-- The project relies on the `libft` utilities for convenience functions; modifications there affect the whole project.
-
-If you plan to extend or modify the shell, look at these hotspots first:
-
-- `tokenizer/` and `parser/` - change how input is split and categorized.
-- `expander/` - adjust variable expansion rules.
-- `execution/` - add support for more complex redirections, background jobs, or better error handling.
+- **Lexing/parsing is most of the work:** handling quotes, operators, and edge cases is where shells get tricky.
+- **Process orchestration fundamentals:** pipes, redirections, `fork()`, `execve()`, and exit-status propagation are the core building blocks of a shell.
+- **Signals & interactive UX:** getting Ctrl-C/Ctrl-\ behavior to feel “bash-like” requires careful signal setup and restoring terminal state.
+- **File descriptor discipline:** correct `dup2()` usage and closing unused FDs prevents deadlocks/leaks in pipelines.
+- **Memory/resource cleanup patterns:** freeing per-loop allocations and un-linking heredoc temp files keeps the shell stable over long sessions.
+- **Separation of concerns matters:** splitting responsibilities into tokenizer → parser → expander → executor made debugging and extending the project far easier.
 
 ## Sequence Diagram
 
@@ -147,8 +163,6 @@ sequenceDiagram
     Executor-->>Minishell: Return status/output
     Minishell-->>User: Display output
 ```
-
-
 
 ### Contributors
 - [@Oalananz](https://github.com/Oalananz)
